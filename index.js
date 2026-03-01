@@ -17,39 +17,34 @@ try {
   brain = fs.readFileSync("./brain.txt", "utf-8");
   console.log("✅ brain.txt loaded");
 } catch(e) {
-  brain = process.env.BRAIN || `You are a friendly Physics Wallah (PW) coupon assistant called Coupon Lelo. Talk like a helpful Indian friend in Hinglish. Keep messages SHORT. Max 2-3 lines per reply.
-
-COUPON CODES:
-- Batch codes (give one randomly each time): SURSIN0002, RAHRAJ0001, PIYKUM0001
-- Book/PW Store code: FTT200 (only on orders above Rs 500)
-
-VISHWAS DIWAS OFFER:
-- All batch prices drop by Rs 600-800 during Vishwas Diwas
-- Coupon gives Rs 50 extra. Total saving = Rs 600-850
-
-CHANNEL LINK:
-- If someone asks for max discount or codes, add [SEND_CHANNEL_LINK] at end of reply
-
-RULES:
-- Talk in Hinglish, be friendly, 1-3 lines only
-- Randomize between the 3 batch codes
-- For books/modules always give FTT200
-- If only Rs 50 complaint, tell about Vishwas Diwas
-- Only help with PW stuff`;
+  brain = process.env.BRAIN || `You are a friendly Physics Wallah (PW) coupon assistant called Coupon Lelo. Talk in Hinglish, short replies 1-3 lines.
+COUPON CODES: Batch: SURSIN0002, RAHRAJ0001, PIYKUM0001 (give randomly). Books: FTT200 (above Rs500).
+VISHWAS DIWAS: batch prices drop Rs600-800 + Rs50 coupon = Rs650-850 total saving.
+If max discount asked add [SEND_CHANNEL_LINK] at end. Only help with PW stuff.`;
   console.log("⚠️ Using default brain");
 }
 
 const MODELS = [
   "stepfun/step-3.5-flash:free",
-  "google/gemini-2.0-flash-exp:free",
-  "meta-llama/llama-4-scout:free",
-  "mistralai/mistral-small-3.1-24b-instruct:free",
-  "deepseek/deepseek-chat-v3-0324:free",
+  "arcee-ai/trinity-large-preview:free",
+  "nvidia/nemotron-3-nano-30b-a3b:free",
+  "upstage/solar-pro-3:free",
+  "liquid/lfm-2.5-1.2b-thinking:free",
+  // "nvidia/nemotron-3-nano-30b-a3b:free",
 ];
 
-// Proxy endpoint — browser calls this, this calls OpenRouter
+// === In-memory logs store ===
+const logs = []; // { time, userMsg, botReply, ip, sessionId }
+const MAX_LOGS = 200;
+
+// === Admin password (set in env or default) ===
+const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+
+// Chat endpoint
 app.post("/chat", async (req, res) => {
-  const { history } = req.body;
+  const { history, sessionId } = req.body;
+  const userMsg = history[history.length - 1]?.content || "";
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
   const messages = [
     {
@@ -59,7 +54,8 @@ app.post("/chat", async (req, res) => {
     ...history,
   ];
 
-  console.log("📨 Incoming msg, trying models...");
+  console.log(`📨 [${new Date().toLocaleTimeString()}] IP:${ip} | "${userMsg}"`);
+
   let lastError;
   for (const model of MODELS) {
     try {
@@ -79,7 +75,19 @@ app.post("/chat", async (req, res) => {
 
       const data = await response.json();
       const reply = data.choices[0].message.content.trim();
-      console.log(`✅ ${model}`);
+      console.log(`✅ ${model} → "${reply.slice(0,60)}..."`);
+
+      // Save to logs
+      logs.unshift({
+        time: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+        sessionId: sessionId || "unknown",
+        ip,
+        userMsg,
+        botReply: reply.replace("[SEND_CHANNEL_LINK]", "").trim(),
+        model,
+      });
+      if (logs.length > MAX_LOGS) logs.pop();
+
       return res.json({ reply });
     } catch (err) {
       console.warn(`❌ ${model}: ${err.message}`);
@@ -90,10 +98,71 @@ app.post("/chat", async (req, res) => {
   res.status(500).json({ error: "All models failed: " + lastError?.message });
 });
 
-// Health check for UptimeRobot
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+// Admin logs page
+app.get("/logs", (req, res) => {
+  const pass = req.query.pass;
+  if (pass !== ADMIN_PASS) {
+    return res.send(`
+      <html><body style="font-family:sans-serif;padding:40px;background:#111;color:#fff">
+        <h2>🔐 Admin Login</h2>
+        <form onsubmit="location.href='/logs?pass='+document.getElementById('p').value;return false">
+          <input id="p" type="password" placeholder="Password" style="padding:10px;font-size:16px;border-radius:8px;border:none;margin-right:10px"/>
+          <button type="submit" style="padding:10px 20px;background:#00a884;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer">Login</button>
+        </form>
+      </body></html>
+    `);
+  }
+
+  const rows = logs.map(l => `
+    <tr>
+      <td>${l.time}</td>
+      <td><code style="background:#e8f5e9;padding:2px 6px;border-radius:4px">${l.sessionId.slice(0,8)}</code></td>
+      <td>${l.ip}</td>
+      <td style="color:#1a1a1a;font-weight:500">${l.userMsg}</td>
+      <td style="color:#00695c">${l.botReply.slice(0,120)}${l.botReply.length>120?'...':''}</td>
+      <td style="color:#888;font-size:11px">${l.model.split('/')[1]?.split(':')[0] || l.model}</td>
+    </tr>
+  `).join('');
+
+  res.send(`
+    <html>
+    <head>
+      <title>Coupon Lelo — Logs</title>
+      <meta charset="UTF-8"/>
+      <style>
+        body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        h2 { color: #00a884; margin-bottom: 16px; }
+        .stats { display:flex; gap:16px; margin-bottom:20px; }
+        .stat { background:#fff; padding:16px 24px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .stat .n { font-size:28px; font-weight:700; color:#00a884; }
+        .stat .l { font-size:13px; color:#888; }
+        table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        th { background:#00a884; color:#fff; padding:12px 14px; text-align:left; font-size:13px; }
+        td { padding:11px 14px; border-bottom:1px solid #f0f0f0; font-size:13.5px; vertical-align:top; }
+        tr:hover td { background:#f9fff9; }
+        .refresh { float:right; background:#00a884; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
+      </style>
+    </head>
+    <body>
+      <h2>🎟️ Coupon Lelo — Admin Logs</h2>
+      <div class="stats">
+        <div class="stat"><div class="n">${logs.length}</div><div class="l">Total Chats</div></div>
+        <div class="stat"><div class="n">${new Set(logs.map(l=>l.sessionId)).size}</div><div class="l">Unique Users</div></div>
+        <div class="stat"><div class="n">${logs[0]?.time || 'N/A'}</div><div class="l">Last Chat</div></div>
+      </div>
+      <button class="refresh" onclick="location.reload()">🔄 Refresh</button>
+      <table>
+        <thead><tr><th>Time (IST)</th><th>Session</th><th>IP</th><th>User Asked</th><th>Bot Replied</th><th>Model</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px">No chats yet</td></tr>'}</tbody>
+      </table>
+      <script>setTimeout(()=>location.reload(), 30000)</script>
+    </body>
+    </html>
+  `);
 });
+
+// Health check
+app.get("/ping", (req, res) => res.send("ok"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

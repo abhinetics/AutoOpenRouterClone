@@ -151,6 +151,8 @@ body { font-family:'Noto Sans',sans-serif; background:#111; height:100vh; displa
 <script>
 const CHANNEL_MSG = "Sb Codes yaha se Lelo Maximum Hai 👇👇👇🔥\nhttps://whatsapp.com/channel/0029Vb2MYEqBA1f44sSAdY2G";
 const history = [];
+// Unique session ID per browser tab
+const sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 function time() {
   return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
@@ -194,7 +196,7 @@ async function getReply(msg) {
   const res = await fetch("/chat", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({history})
+    body: JSON.stringify({history, sessionId})
   });
   const data = await res.json();
   if(data.error) throw new Error(data.error);
