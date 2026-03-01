@@ -123,17 +123,27 @@ body.takeover .date-div span{background:rgba(200,162,0,0.1);color:#9a8a50;border
 body.takeover .row.out .bubble{background:#1e1800;border:1px solid #3a3000;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
 body.takeover .row.in .bubble{background:#1a1500;border:1px solid #c8a200;box-shadow:0 2px 12px rgba(200,162,0,0.15)}
 
-/* Admin bubble — extra special */
-.row.in.admin-msg .bubble{
+/* Admin bubble — gold ONLY during takeover */
+body.takeover .row.in.admin-msg .bubble{
   background:linear-gradient(135deg,#1a1200,#2a1e00) !important;
   border:1.5px solid #f5d000 !important;
   box-shadow:0 0 20px rgba(245,208,0,0.2),0 2px 12px rgba(0,0,0,0.5) !important;
+  color:#f5e6a3 !important;
+}
+
+/* Admin bubble — normal mode: just a slightly accented white bubble */
+.row.in.admin-msg .bubble{
+  background:#fff !important;
+  border:1.5px solid #00a884 !important;
+  box-shadow:0 2px 8px rgba(0,168,132,0.15) !important;
+  color:#111b21 !important;
 }
 
 .tail-out{position:absolute;top:0;right:-8px;width:0;height:0;border-left:8px solid var(--out);border-bottom:8px solid transparent;transition:border-color 0.5s}
 .tail-in{position:absolute;top:0;left:-8px;width:0;height:0;border-right:8px solid var(--in);border-bottom:8px solid transparent;transition:border-color 0.5s}
 body.takeover .tail-out{border-left-color:#1e1800}
 body.takeover .tail-in{border-right-color:#1a1500}
+.row.in.admin-msg .tail-in{border-right-color:#fff}
 body.takeover .row.in.admin-msg .tail-in{border-right-color:#1a1200}
 
 .btime{font-size:11px;color:var(--muted);float:right;margin-left:8px;margin-top:3px;display:flex;align-items:center;gap:3px}
