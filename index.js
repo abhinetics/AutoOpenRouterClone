@@ -51,8 +51,8 @@ Free of Cost ♥️"
 - If someone says thanks, say you're always available
 - If someone says coupon is only ₹50 or wants more discount, tell them about Vishwas Diwas
 - Never make up codes or offers not listed above
-- If asked about anything unrelated to PW, politely say you only help with PW stuff`;
-  console.log("⚠️ Using default brain");
+- If asked about anything unrelated to PW, politely say you only help with PW stuff
+`;
 }
 
 const MODELS = [
@@ -63,29 +63,173 @@ const MODELS = [
   "liquid/lfm-2.5-1.2b-thinking:free",
   // "nvidia/nemotron-3-nano-30b-a3b:free",
 ];
-
-// === In-memory logs store ===
-const logs = []; // { time, userMsg, botReply, ip, sessionId }
+const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+const logs = [];
 const MAX_LOGS = 200;
 
-// === Admin password (set in env or default) ===
-const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+// SSE clients — { sessionId -> res }
+const studentClients = {};  // student SSE connections
+const adminClients = [];    // admin SSE connections
 
-// Chat endpoint
+// Takeover state — set of sessionIds under admin control
+const takenOver = new Set();
+
+// Pending admin replies — sessionId -> resolve function
+const pendingReplies = {};
+
+// ── SSE: Student listens for admin messages ──
+app.get("/sse/student/:sessionId", (req, res) => {
+  const { sessionId } = req.params;
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  studentClients[sessionId] = res;
+  console.log(`📡 Student connected: ${sessionId}`);
+
+  // Send takeover status immediately on connect
+  if (takenOver.has(sessionId)) {
+    res.write(`data: ${JSON.stringify({ type: "takeover", active: true })}\n\n`);
+  }
+
+  req.on("close", () => {
+    delete studentClients[sessionId];
+    console.log(`📴 Student disconnected: ${sessionId}`);
+  });
+});
+
+// ── SSE: Admin listens for new messages ──
+app.get("/sse/admin", (req, res) => {
+  const pass = req.query.pass;
+  if (pass !== ADMIN_PASS) return res.status(403).send("Unauthorized");
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  adminClients.push(res);
+  console.log("🛡️ Admin SSE connected");
+
+  // Send current takeover list
+  res.write(`data: ${JSON.stringify({ type: "init", takenOver: [...takenOver], logs: logs.slice(0, 50) })}\n\n`);
+
+  req.on("close", () => {
+    const idx = adminClients.indexOf(res);
+    if (idx > -1) adminClients.splice(idx, 1);
+  });
+});
+
+// Helper — broadcast to all admins
+function notifyAdmins(data) {
+  const msg = `data: ${JSON.stringify(data)}\n\n`;
+  adminClients.forEach(c => c.write(msg));
+}
+
+// Helper — send to specific student
+function notifyStudent(sessionId, data) {
+  const client = studentClients[sessionId];
+  if (client) client.write(`data: ${JSON.stringify(data)}\n\n`);
+}
+
+// ── Admin: Toggle takeover for a session ──
+app.post("/admin/takeover", (req, res) => {
+  const { pass, sessionId, active } = req.body;
+  if (pass !== ADMIN_PASS) return res.status(403).json({ error: "Unauthorized" });
+
+  if (active) {
+    takenOver.add(sessionId);
+    notifyStudent(sessionId, { type: "takeover", active: true });
+    console.log(`🎮 Admin took over: ${sessionId}`);
+  } else {
+    takenOver.delete(sessionId);
+    notifyStudent(sessionId, { type: "takeover", active: false });
+    // Resolve any pending reply with null to let AI handle
+    if (pendingReplies[sessionId]) {
+      pendingReplies[sessionId](null);
+      delete pendingReplies[sessionId];
+    }
+    console.log(`🤖 AI restored: ${sessionId}`);
+  }
+
+  notifyAdmins({ type: "takeover_update", sessionId, active });
+  res.json({ ok: true });
+});
+
+// ── Admin: Send message to student ──
+app.post("/admin/send", (req, res) => {
+  const { pass, sessionId, message } = req.body;
+  if (pass !== ADMIN_PASS) return res.status(403).json({ error: "Unauthorized" });
+
+  notifyStudent(sessionId, { type: "admin_message", message });
+
+  // Resolve pending reply if waiting
+  if (pendingReplies[sessionId]) {
+    pendingReplies[sessionId](message);
+    delete pendingReplies[sessionId];
+  }
+
+  // Log it
+  logs.unshift({
+    time: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    sessionId,
+    ip: "admin",
+    userMsg: "— (admin reply)",
+    botReply: message,
+    model: "👤 ADMIN",
+    isAdmin: true,
+  });
+
+  console.log(`💬 Admin → ${sessionId}: "${message}"`);
+  res.json({ ok: true });
+});
+
+// ── Chat endpoint ──
 app.post("/chat", async (req, res) => {
   const { history, sessionId } = req.body;
   const userMsg = history[history.length - 1]?.content || "";
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const ist = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
+  console.log(`📨 [${ist}] ${sessionId?.slice(0,8)} | "${userMsg}"`);
+
+  // Notify admins of new message
+  notifyAdmins({
+    type: "new_message",
+    sessionId,
+    ip,
+    time: ist,
+    userMsg,
+    takenOver: takenOver.has(sessionId),
+  });
+
+  // If admin has taken over, wait for admin reply (max 30s)
+  if (takenOver.has(sessionId)) {
+    console.log(`⏳ Waiting for admin reply for ${sessionId}...`);
+    const adminReply = await new Promise((resolve) => {
+      pendingReplies[sessionId] = resolve;
+      setTimeout(() => {
+        if (pendingReplies[sessionId]) {
+          delete pendingReplies[sessionId];
+          resolve(null); // timeout — fall through to AI
+        }
+      }, 30000);
+    });
+
+    if (adminReply) {
+      logs.unshift({ time: ist, sessionId, ip, userMsg, botReply: adminReply, model: "👤 ADMIN", isAdmin: true });
+      if (logs.length > MAX_LOGS) logs.pop();
+      return res.json({ reply: adminReply });
+    }
+    // If admin didn't reply in time, fall through to AI
+  }
+
+  // AI reply
   const messages = [
-    {
-      role: "system",
-      content: `${brain}\n\nIMPORTANT: Reply in 1-3 lines only. Be friendly and short. If you want to send the channel link write [SEND_CHANNEL_LINK] on a new line at the end.`,
-    },
+    { role: "system", content: `${brain}\n\nIMPORTANT: Reply in 1-3 lines only. Be friendly and short. If you want to send the channel link write [SEND_CHANNEL_LINK] on a new line at the end.` },
     ...history,
   ];
-
-  console.log(`📨 [${new Date().toLocaleTimeString()}] IP:${ip} | "${userMsg}"`);
 
   let lastError;
   for (const model of MODELS) {
@@ -106,18 +250,13 @@ app.post("/chat", async (req, res) => {
 
       const data = await response.json();
       const reply = data.choices[0].message.content.trim();
-      console.log(`✅ ${model} → "${reply.slice(0,60)}..."`);
+      console.log(`✅ ${model}`);
 
-      // Save to logs
-      logs.unshift({
-        time: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-        sessionId: sessionId || "unknown",
-        ip,
-        userMsg,
-        botReply: reply.replace("[SEND_CHANNEL_LINK]", "").trim(),
-        model,
-      });
+      logs.unshift({ time: ist, sessionId, ip, userMsg, botReply: reply.replace("[SEND_CHANNEL_LINK]", "").trim(), model });
       if (logs.length > MAX_LOGS) logs.pop();
+
+      // Notify admins of bot reply
+      notifyAdmins({ type: "bot_reply", sessionId, reply: reply.replace("[SEND_CHANNEL_LINK]", "").trim(), model });
 
       return res.json({ reply });
     } catch (err) {
@@ -126,74 +265,38 @@ app.post("/chat", async (req, res) => {
     }
   }
 
-  res.status(500).json({ error: "All models failed: " + lastError?.message });
+  res.status(500).json({ error: "All models failed" });
 });
 
-// Admin logs page
+// ── Admin dashboard ──
 app.get("/logs", (req, res) => {
   const pass = req.query.pass;
   if (pass !== ADMIN_PASS) {
-    return res.send(`
-      <html><body style="font-family:sans-serif;padding:40px;background:#111;color:#fff">
-        <h2>🔐 Admin Login</h2>
-        <form onsubmit="location.href='/logs?pass='+document.getElementById('p').value;return false">
-          <input id="p" type="password" placeholder="Password" style="padding:10px;font-size:16px;border-radius:8px;border:none;margin-right:10px"/>
-          <button type="submit" style="padding:10px 20px;background:#00a884;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer">Login</button>
-        </form>
-      </body></html>
-    `);
+    return res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin Login</title>
+    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;background:#0f1923;min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .box{background:#1a2632;padding:40px;border-radius:16px;text-align:center;width:90%;max-width:360px}
+    h2{color:#00a884;margin-bottom:8px;font-size:22px}p{color:#8696a0;margin-bottom:24px;font-size:14px}
+    input{width:100%;padding:12px 16px;border-radius:10px;border:1.5px solid #2d3f4e;background:#0f1923;color:#fff;font-size:15px;margin-bottom:14px;outline:none}
+    input:focus{border-color:#00a884}
+    button{width:100%;padding:13px;background:#00a884;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+    button:hover{background:#008069}</style></head>
+    <body><div class="box"><h2>🛡️ Admin Panel</h2><p>Coupon Lelo Dashboard</p>
+    <form onsubmit="location.href='/logs?pass='+document.getElementById('p').value;return false">
+    <input id="p" type="password" placeholder="Enter password" autofocus/>
+    <button type="submit">Login →</button></form></div></body></html>`);
   }
-
-  const rows = logs.map(l => `
-    <tr>
-      <td>${l.time}</td>
-      <td><code style="background:#e8f5e9;padding:2px 6px;border-radius:4px">${l.sessionId.slice(0,8)}</code></td>
-      <td>${l.ip}</td>
-      <td style="color:#1a1a1a;font-weight:500">${l.userMsg}</td>
-      <td style="color:#00695c">${l.botReply.slice(0,120)}${l.botReply.length>120?'...':''}</td>
-      <td style="color:#888;font-size:11px">${l.model.split('/')[1]?.split(':')[0] || l.model}</td>
-    </tr>
-  `).join('');
-
-  res.send(`
-    <html>
-    <head>
-      <title>Coupon Lelo — Logs</title>
-      <meta charset="UTF-8"/>
-      <style>
-        body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
-        h2 { color: #00a884; margin-bottom: 16px; }
-        .stats { display:flex; gap:16px; margin-bottom:20px; }
-        .stat { background:#fff; padding:16px 24px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-        .stat .n { font-size:28px; font-weight:700; color:#00a884; }
-        .stat .l { font-size:13px; color:#888; }
-        table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-        th { background:#00a884; color:#fff; padding:12px 14px; text-align:left; font-size:13px; }
-        td { padding:11px 14px; border-bottom:1px solid #f0f0f0; font-size:13.5px; vertical-align:top; }
-        tr:hover td { background:#f9fff9; }
-        .refresh { float:right; background:#00a884; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
-      </style>
-    </head>
-    <body>
-      <h2>🎟️ Coupon Lelo — Admin Logs</h2>
-      <div class="stats">
-        <div class="stat"><div class="n">${logs.length}</div><div class="l">Total Chats</div></div>
-        <div class="stat"><div class="n">${new Set(logs.map(l=>l.sessionId)).size}</div><div class="l">Unique Users</div></div>
-        <div class="stat"><div class="n">${logs[0]?.time || 'N/A'}</div><div class="l">Last Chat</div></div>
-      </div>
-      <button class="refresh" onclick="location.reload()">🔄 Refresh</button>
-      <table>
-        <thead><tr><th>Time (IST)</th><th>Session</th><th>IP</th><th>User Asked</th><th>Bot Replied</th><th>Model</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px">No chats yet</td></tr>'}</tbody>
-      </table>
-      <script>setTimeout(()=>location.reload(), 30000)</script>
-    </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, "admin.html"));
 });
 
-// Health check
+// Serve admin panel data
+app.get("/admin/data", (req, res) => {
+  const pass = req.query.pass;
+  if (pass !== ADMIN_PASS) return res.status(403).json({ error: "Unauthorized" });
+  res.json({ logs: logs.slice(0, 100), takenOver: [...takenOver], onlineStudents: Object.keys(studentClients) });
+});
+
 app.get("/ping", (req, res) => res.send("ok"));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server on port ${PORT}`));
