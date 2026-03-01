@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — Coupon Lelo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1923;color:#e9edef;min-height:100vh}
+
+/* Header */
+.header{background:#1a2632;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2d3f4e;position:sticky;top:0;z-index:100}
+.htitle{font-size:18px;font-weight:700;color:#00a884}
+.hstats{display:flex;gap:16px}
+.hstat{text-align:center}
+.hstat .n{font-size:20px;font-weight:700;color:#00a884}
+.hstat .l{font-size:11px;color:#8696a0}
+
+/* Layout */
+.layout{display:flex;height:calc(100vh - 57px)}
+
+/* Sessions sidebar */
+.sidebar{width:280px;min-width:280px;background:#1a2632;border-right:1px solid #2d3f4e;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-title{padding:14px 16px;font-size:12px;font-weight:600;color:#8696a0;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #2d3f4e}
+.session-item{padding:14px 16px;border-bottom:1px solid #1e2d3a;cursor:pointer;transition:background 0.15s;position:relative}
+.session-item:hover{background:#243040}
+.session-item.active{background:#1d3a2f;border-left:3px solid #00a884}
+.session-item.takeover{background:#1d2a3a;border-left:3px solid #ff9800}
+.sname{font-size:14px;font-weight:600;color:#e9edef;margin-bottom:3px}
+.slast{font-size:12px;color:#8696a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.stime{font-size:11px;color:#8696a0;margin-top:3px}
+.sbadge{position:absolute;top:14px;right:12px;width:8px;height:8px;border-radius:50%;background:#00a884}
+.sbadge.offline{background:#4a5568}
+.sbadge.takeover{background:#ff9800}
+.stag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;margin-top:4px;font-weight:600}
+.stag.ai{background:#1d3a2f;color:#00a884}
+.stag.admin{background:#3a2d1d;color:#ff9800}
+
+/* Main chat area */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{padding:14px 20px;background:#1a2632;border-bottom:1px solid #2d3f4e;display:flex;align-items:center;justify-content:space-between}
+.chat-header-info .name{font-size:15px;font-weight:600}
+.chat-header-info .sub{font-size:12px;color:#8696a0;margin-top:2px}
+.takeover-btn{padding:9px 18px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.takeover-btn.off{background:#1d3a2f;color:#00a884;border:1.5px solid #00a884}
+.takeover-btn.off:hover{background:#00a884;color:#fff}
+.takeover-btn.on{background:#ff9800;color:#fff;animation:glow 1.5s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(255,152,0,0.4)}50%{box-shadow:0 0 20px rgba(255,152,0,0.8)}}
+
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#0f1923}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-thumb{background:#2d3f4e;border-radius:4px}
+
+.msg-group{display:flex;flex-direction:column;gap:4px}
+.msg-group label{font-size:11px;color:#8696a0;padding:0 4px}
+.msg-bubble{max-width:75%;padding:9px 13px;border-radius:10px;font-size:14px;line-height:20px;word-wrap:break-word}
+.msg-user{align-self:flex-end}
+.msg-user .msg-bubble{background:#1d3a2f;color:#d9fdd3;border-bottom-right-radius:3px}
+.msg-bot{align-self:flex-start}
+.msg-bot .msg-bubble{background:#1a2632;color:#e9edef;border-bottom-left-radius:3px}
+.msg-admin-out{align-self:flex-start}
+.msg-admin-out .msg-bubble{background:#3a2d1d;color:#ffd180;border-bottom-left-radius:3px;border:1px solid #ff9800}
+.msg-time{font-size:11px;color:#8696a0;padding:0 4px;margin-top:1px}
+.model-tag{font-size:10px;color:#4a5568;margin-top:2px;padding:0 4px}
+
+/* Admin input */
+.admin-input-area{padding:12px 16px;background:#1a2632;border-top:1px solid #2d3f4e}
+.takeover-bar{background:#3a2d1d;border:1px solid #ff9800;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none;align-items:center;gap:8px;font-size:13px;color:#ffd180}
+.takeover-bar.show{display:flex}
+.takeover-bar .dot{width:8px;height:8px;border-radius:50%;background:#ff9800;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.input-row{display:flex;gap:10px}
+.admin-inp{flex:1;background:#0f1923;border:1.5px solid #2d3f4e;border-radius:10px;padding:10px 14px;color:#e9edef;font-size:14px;font-family:inherit;outline:none;resize:none}
+.admin-inp:focus{border-color:#ff9800}
+.admin-inp:disabled{opacity:0.4;cursor:not-allowed}
+.send-admin-btn{padding:10px 18px;background:#ff9800;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.send-admin-btn:hover{background:#e65100}
+.send-admin-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Empty state */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:#4a5568;gap:12px}
+.empty .icon{font-size:48px;opacity:0.5}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a2632;border:1px solid #00a884;color:#00a884;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;animation:slideIn 0.3s ease;display:none}
+.toast.show{display:block}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Responsive */
+@media(max-width:600px){
+  .sidebar{width:100%;position:absolute;z-index:50;height:100%;transform:translateX(-100%);transition:transform 0.3s}
+  .sidebar.open{transform:translateX(0)}
+  .menu-btn{display:block!important}
+}
+.menu-btn{display:none;background:none;border:none;color:#e9edef;font-size:22px;cursor:pointer;padding:4px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="htitle">🛡️ Coupon Lelo Admin</div>
+  </div>
+  <div class="hstats">
+    <div class="hstat"><div class="n" id="statTotal">0</div><div class="l">Chats</div></div>
+    <div class="hstat"><div class="n" id="statOnline">0</div><div class="l">Online</div></div>
+    <div class="hstat"><div class="n" id="statTakeover">0</div><div class="l">Takeover</div></div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-title">Active Sessions</div>
+    <div id="sessionList"><div style="padding:20px;color:#4a5568;font-size:13px">Waiting for chats...</div></div>
+  </div>
+
+  <div class="main">
+    <div class="chat-header" id="chatHeader" style="display:none">
+      <div class="chat-header-info">
+        <div class="name" id="chatName">Select a session</div>
+        <div class="sub" id="chatSub">—</div>
+      </div>
+      <button class="takeover-btn off" id="takeoverBtn" onclick="toggleTakeover()">🎮 Take Over</button>
+    </div>
+
+    <div class="msgs" id="msgs">
+      <div class="empty"><div class="icon">💬</div><div>Select a session to view chat</div></div>
+    </div>
+
+    <div class="admin-input-area" id="adminInputArea" style="display:none">
+      <div class="takeover-bar" id="takeoverBar">
+        <div class="dot"></div>
+        <span>You are in control — student sees your replies as bot</span>
+      </div>
+      <div class="input-row">
+        <textarea class="admin-inp" id="adminInp" placeholder="Type reply as bot... (Enter to send)" rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminMsg()}"
+          disabled></textarea>
+        <button class="send-admin-btn" id="sendBtn" onclick="sendAdminMsg()" disabled>Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const pass = new URLSearchParams(location.search).get("pass");
+let selectedSession = null;
+let takenOverSessions = new Set();
+let onlineSessions = new Set();
+const sessionData = {}; // sessionId -> { msgs: [], lastMsg, time, ip }
+
+function getPass() { return pass; }
+
+// ── SSE connection ──
+const evtSource = new EventSource(`/sse/admin?pass=${pass}`);
+
+evtSource.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+
+  if (data.type === "init") {
+    data.takenOver.forEach(s => takenOverSessions.add(s));
+    data.logs.forEach(log => {
+      if (!sessionData[log.sessionId]) sessionData[log.sessionId] = { msgs: [], lastMsg: "", time: log.time, ip: log.ip };
+      sessionData[log.sessionId].msgs.push({ role: "user", text: log.userMsg, time: log.time });
+      sessionData[log.sessionId].msgs.push({ role: log.isAdmin ? "admin" : "bot", text: log.botReply, time: log.time, model: log.model });
+      sessionData[log.sessionId].lastMsg = log.userMsg;
+    });
+    renderSessions();
+  }
+
+  if (data.type === "new_message") {
+    if (!sessionData[data.sessionId]) sessionData[data.sessionId] = { msgs: [], lastMsg: "", time: data.time, ip: data.ip };
+    sessionData[data.sessionId].msgs.push({ role: "user", text: data.userMsg, time: data.time });
+    sessionData[data.sessionId].lastMsg = data.userMsg;
+    sessionData[data.sessionId].time = data.time;
+    onlineSessions.add(data.sessionId);
+    renderSessions();
+    if (selectedSession === data.sessionId) renderChat(data.sessionId);
+    showToast(`💬 New: "${data.userMsg.slice(0,40)}"`);
+    updateStats();
+  }
+
+  if (data.type === "bot_reply") {
+    if (sessionData[data.sessionId]) {
+      sessionData[data.sessionId].msgs.push({ role: "bot", text: data.reply, time: new Date().toLocaleTimeString(), model: data.model });
+      if (selectedSession === data.sessionId) renderChat(data.sessionId);
+    }
+  }
+
+  if (data.type === "takeover_update") {
+    if (data.active) takenOverSessions.add(data.sessionId);
+    else takenOverSessions.delete(data.sessionId);
+    renderSessions();
+    if (selectedSession === data.sessionId) updateTakeoverUI();
+    updateStats();
+  }
+};
+
+// ── Render session list ──
+function renderSessions() {
+  const list = document.getElementById("sessionList");
+  const sessions = Object.entries(sessionData).sort((a,b) => new Date(b[1].time) - new Date(a[1].time));
+
+  if (!sessions.length) {
+    list.innerHTML = `<div style="padding:20px;color:#4a5568;font-size:13px">Waiting for chats...</div>`;
+    return;
+  }
+
+  list.innerHTML = sessions.map(([sid, d]) => {
+    const isOnline = onlineSessions.has(sid);
+    const isTakeover = takenOverSessions.has(sid);
+    const isActive = selectedSession === sid;
+    const tag = isTakeover ? `<span class="stag admin">👤 ADMIN</span>` : `<span class="stag ai">🤖 AI</span>`;
+    return `
+      <div class="session-item ${isActive?'active':''} ${isTakeover?'takeover':''}" onclick="selectSession('${sid}')">
+        <div class="sbadge ${isTakeover?'takeover':isOnline?'':'offline'}"></div>
+        <div class="sname">User ${sid.slice(0,8)}</div>
+        <div class="slast">${d.lastMsg || "No messages"}</div>
+        <div class="stime">${d.time}</div>
+        ${tag}
+      </div>`;
+  }).join("");
+
+  updateStats();
+}
+
+// ── Select session ──
+function selectSession(sid) {
+  selectedSession = sid;
+  document.getElementById("chatHeader").style.display = "flex";
+  document.getElementById("adminInputArea").style.display = "block";
+  document.getElementById("chatName").textContent = `User ${sid.slice(0,8)}`;
+  document.getElementById("chatSub").textContent = `IP: ${sessionData[sid]?.ip || "unknown"} · ${sessionData[sid]?.msgs?.length || 0} messages`;
+  renderChat(sid);
+  updateTakeoverUI();
+  renderSessions();
+
+  // Close sidebar on mobile
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+// ── Render chat messages ──
+function renderChat(sid) {
+  const msgs = sessionData[sid]?.msgs || [];
+  const container = document.getElementById("msgs");
+
+  if (!msgs.length) {
+    container.innerHTML = `<div class="empty"><div class="icon">💬</div><div>No messages yet</div></div>`;
+    return;
+  }
+
+  container.innerHTML = msgs.map(m => {
+    if (m.role === "user") return `
+      <div class="msg-group msg-user">
+        <div class="msg-bubble">${m.text}</div>
+        <div class="msg-time" style="text-align:right">${m.time}</div>
+      </div>`;
+    if (m.role === "admin") return `
+      <div class="msg-group msg-admin-out">
+        <label>👤 You (Admin)</label>
+        <div class="msg-bubble">${m.text}</div>
+        <div class="msg-time">${m.time}</div>
+      </div>`;
+    return `
+      <div class="msg-group msg-bot">
+        <label>🤖 Bot</label>
+        <div class="msg-bubble">${m.text}</div>
+        <div class="msg-time">${m.time}</div>
+        <div class="model-tag">${m.model || ""}</div>
+      </div>`;
+  }).join("");
+
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── Toggle takeover ──
+async function toggleTakeover() {
+  if (!selectedSession) return;
+  const active = !takenOverSessions.has(selectedSession);
+  await fetch("/admin/takeover", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pass, sessionId: selectedSession, active }),
+  });
+  if (active) takenOverSessions.add(selectedSession);
+  else takenOverSessions.delete(selectedSession);
+  updateTakeoverUI();
+  renderSessions();
+  showToast(active ? "🎮 Takeover ON — you control this chat!" : "🤖 AI restored");
+}
+
+// ── Update takeover UI ──
+function updateTakeoverUI() {
+  const btn = document.getElementById("takeoverBtn");
+  const bar = document.getElementById("takeoverBar");
+  const inp = document.getElementById("adminInp");
+  const sendBtn = document.getElementById("sendBtn");
+  const active = takenOverSessions.has(selectedSession);
+
+  if (active) {
+    btn.textContent = "🔴 Release Control";
+    btn.className = "takeover-btn on";
+    bar.classList.add("show");
+    inp.disabled = false;
+    sendBtn.disabled = false;
+    inp.focus();
+  } else {
+    btn.textContent = "🎮 Take Over";
+    btn.className = "takeover-btn off";
+    bar.classList.remove("show");
+    inp.disabled = true;
+    sendBtn.disabled = true;
+  }
+}
+
+// ── Send admin message ──
+async function sendAdminMsg() {
+  const inp = document.getElementById("adminInp");
+  const msg = inp.value.trim();
+  if (!msg || !selectedSession) return;
+  inp.value = "";
+
+  const time = new Date().toLocaleTimeString();
+  sessionData[selectedSession].msgs.push({ role: "admin", text: msg, time });
+  renderChat(selectedSession);
+
+  await fetch("/admin/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pass, sessionId: selectedSession, message: msg }),
+  });
+}
+
+// ── Stats ──
+function updateStats() {
+  document.getElementById("statTotal").textContent = Object.keys(sessionData).length;
+  document.getElementById("statOnline").textContent = onlineSessions.size;
+  document.getElementById("statTakeover").textContent = takenOverSessions.size;
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ── Mobile sidebar ──
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("open");
+}
+
+// Poll for fresh data every 15s as fallback
+setInterval(async () => {
+  const res = await fetch(`/admin/data?pass=${pass}`);
+  const data = await res.json();
+  onlineSessions = new Set(data.onlineStudents);
+  updateStats();
+  renderSessions();
+}, 15000);
+</script>
+</body>
+</html>
