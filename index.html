@@ -2,101 +2,220 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"/>
 <title>Coupon Lelo 🎟️</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet"/>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-:root {
-  --green:#00a884; --green-dark:#008069;
-  --bg:#efeae2; --panel:#f0f2f5;
-  --white:#fff; --out:#d9fdd3; --in:#fff;
-  --text:#111b21; --muted:#667781;
-  --border:#e9edef; --header:#202c33;
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* ── Normal theme ── */
+:root{
+  --green:#00a884;--green-dark:#008069;
+  --bg:#efeae2;--panel:#f0f2f5;
+  --white:#fff;--out:#d9fdd3;--in:#fff;
+  --text:#111b21;--muted:#667781;
+  --border:#e9edef;--hdr:#202c33;
+  --bubble-in:#fff;
+  --avatar-bg:linear-gradient(135deg,#00a884,#00d4aa);
+  --send-bg:#00a884;--send-hover:#008069;
+  --status-color:#00a884;
+  --tick:#53bdeb;
+  --pill-bg:#e8f5e9;--pill-border:#a5d6a7;--pill-text:#2e7d32;
 }
-body { font-family:'Noto Sans',sans-serif; background:#111; height:100vh; display:flex; justify-content:center; align-items:center; }
-.wrap { width:100%; max-width:430px; height:100vh; max-height:900px; display:flex; flex-direction:column; background:var(--bg); overflow:hidden; box-shadow:0 20px 80px rgba(0,0,0,0.5); }
 
-/* Header */
-.header { background:var(--header); padding:10px 16px; display:flex; align-items:center; gap:12px; }
-.avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#00a884,#00d4aa); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-.hname { color:#fff; font-size:16px; font-weight:600; }
-.hstatus { color:#00a884; font-size:12px; margin-top:1px; }
-.hicons { margin-left:auto; display:flex; gap:20px; color:#aebac1; }
-.hicons svg { width:22px; height:22px; cursor:pointer; }
+/* ── TAKEOVER theme — pure gold luxury ── */
+body.takeover{
+  --bg:#0a0800;
+  --panel:#110e00;
+  --white:#1a1500;
+  --out:#2a2000;
+  --in:#1a1500;
+  --text:#f5e6a3;
+  --muted:#9a8a50;
+  --border:#3a3000;
+  --hdr:#000;
+  --bubble-in:#1a1500;
+  --send-bg:linear-gradient(135deg,#c8a200,#f5d000);
+  --send-hover:#c8a200;
+  --status-color:#f5d000;
+  --tick:#f5d000;
+  --pill-bg:#2a2000;--pill-border:#c8a200;--pill-text:#f5d000;
+  background:#000 !important;
+}
 
-/* Chat */
-.chat {
-  flex:1; overflow-y:auto; padding:12px 16px 8px;
-  background-color:#efeae2;
+body{font-family:'Noto Sans',sans-serif;background:#111;height:100dvh;display:flex;justify-content:center;align-items:center;transition:background 1s;overflow:hidden}
+
+.wrap{width:100%;max-width:430px;height:100dvh;max-height:900px;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,0.5);transition:all 0.8s ease;position:relative}
+
+body.takeover .wrap{
+  box-shadow:0 0 0 2px #c8a200, 0 0 40px rgba(200,162,0,0.4), 0 20px 80px rgba(0,0,0,0.9);
+}
+
+/* ── Particle canvas overlay ── */
+#particles{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0;transition:opacity 1s}
+body.takeover #particles{opacity:1}
+
+/* ── Header ── */
+.header{background:var(--hdr);padding:10px 16px;display:flex;align-items:center;gap:12px;transition:all 0.8s;position:relative;z-index:2}
+body.takeover .header{background:linear-gradient(90deg,#000,#1a1200,#000);border-bottom:1px solid #c8a200}
+
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--avatar-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;transition:all 0.8s}
+body.takeover .avatar{background:linear-gradient(135deg,#c8a200,#f5d000);box-shadow:0 0 16px rgba(245,208,0,0.6);animation:avatarPulse 2s infinite}
+@keyframes avatarPulse{0%,100%{box-shadow:0 0 16px rgba(245,208,0,0.4)}50%{box-shadow:0 0 28px rgba(245,208,0,0.9)}}
+
+.hname{color:#fff;font-size:16px;font-weight:600;transition:all 0.5s}
+body.takeover .hname{font-family:'Cinzel',serif;color:#f5d000;letter-spacing:1px;text-shadow:0 0 12px rgba(245,208,0,0.6)}
+
+.hstatus{font-size:12px;margin-top:1px;color:var(--status-color);transition:all 0.5s}
+body.takeover .hstatus{font-weight:700;letter-spacing:0.5px}
+
+.hicons{margin-left:auto;display:flex;gap:20px;color:#aebac1;transition:color 0.5s}
+body.takeover .hicons{color:#9a8a50}
+
+/* ── Takeover banner ── */
+.takeover-banner{
+  display:none;padding:8px 16px;
+  background:linear-gradient(90deg,#000,#1a1200,#000);
+  border-bottom:1px solid #c8a200;
+  text-align:center;font-size:12px;color:#f5d000;
+  letter-spacing:2px;font-weight:700;font-family:'Cinzel',serif;
+  position:relative;z-index:2;
+  animation:bannerShimmer 2s infinite;
+}
+@keyframes bannerShimmer{
+  0%,100%{background:linear-gradient(90deg,#000,#1a1200,#000)}
+  50%{background:linear-gradient(90deg,#000,#2a2000,#000)}
+}
+.takeover-banner.show{display:block}
+.banner-dot{display:inline-block;width:7px;height:7px;background:#f5d000;border-radius:50%;margin-right:8px;animation:dotBlink 1s infinite;vertical-align:middle}
+@keyframes dotBlink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* ── Chat area ── */
+.chat{
+  flex:1;overflow-y:auto;padding:12px 16px 8px;
+  background-color:var(--bg);
   background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c8c0b8' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
-  display:flex; flex-direction:column; gap:3px; scroll-behavior:smooth;
+  display:flex;flex-direction:column;gap:3px;scroll-behavior:smooth;
+  transition:background 1s;position:relative;z-index:1;
 }
-.chat::-webkit-scrollbar { width:4px; }
-.chat::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.15); border-radius:10px; }
+body.takeover .chat{
+  background-color:#0a0800;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c8a200' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.chat::-webkit-scrollbar{width:4px}
+.chat::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:10px}
+body.takeover .chat::-webkit-scrollbar-thumb{background:rgba(200,162,0,0.3)}
 
-.date-div { text-align:center; margin:8px 0; }
-.date-div span { background:rgba(255,255,255,0.85); color:#54656f; font-size:11.5px; padding:4px 10px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.1); }
+.date-div{text-align:center;margin:8px 0}
+.date-div span{background:rgba(255,255,255,0.85);color:#54656f;font-size:11.5px;padding:4px 10px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,0.1);transition:all 0.5s}
+body.takeover .date-div span{background:rgba(200,162,0,0.1);color:#9a8a50;border:1px solid rgba(200,162,0,0.2)}
 
-.row { display:flex; margin:2px 0; animation:fadeUp 0.2s ease; }
-.row.out { justify-content:flex-end; }
-.row.in { justify-content:flex-start; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+/* ── Messages ── */
+.row{display:flex;margin:2px 0;animation:fadeUp 0.2s ease}
+.row.out{justify-content:flex-end}
+.row.in{justify-content:flex-start}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-.bubble { max-width:78%; padding:7px 10px 6px; border-radius:8px; font-size:14.2px; line-height:20px; color:var(--text); position:relative; box-shadow:0 1px 2px rgba(0,0,0,0.1); word-wrap:break-word; }
-.row.out .bubble { background:var(--out); border-top-right-radius:2px; }
-.row.in .bubble { background:var(--in); border-top-left-radius:2px; }
-.tail-out { position:absolute; top:0; right:-8px; width:0; height:0; border-left:8px solid var(--out); border-bottom:8px solid transparent; }
-.tail-in { position:absolute; top:0; left:-8px; width:0; height:0; border-right:8px solid var(--in); border-bottom:8px solid transparent; }
-.btime { font-size:11px; color:var(--muted); float:right; margin-left:8px; margin-top:3px; display:flex; align-items:center; gap:3px; }
-.tick { color:#53bdeb; }
+.bubble{max-width:78%;padding:7px 10px 6px;border-radius:8px;font-size:14.2px;line-height:20px;color:var(--text);position:relative;box-shadow:0 1px 2px rgba(0,0,0,0.1);word-wrap:break-word;transition:all 0.5s}
+.row.out .bubble{background:var(--out);border-top-right-radius:2px}
+.row.in .bubble{background:var(--in);border-top-left-radius:2px}
 
-/* Typing */
-.typing { background:var(--in); border-radius:8px; border-top-left-radius:2px; padding:12px 14px; box-shadow:0 1px 2px rgba(0,0,0,0.1); display:none; }
-.typing.show { display:block; }
-.dots { display:flex; gap:4px; align-items:center; }
-.dots span { width:8px; height:8px; background:#8696a0; border-radius:50%; animation:bounce 1.2s infinite; }
+body.takeover .row.out .bubble{background:#1e1800;border:1px solid #3a3000;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
+body.takeover .row.in .bubble{background:#1a1500;border:1px solid #c8a200;box-shadow:0 2px 12px rgba(200,162,0,0.15)}
+
+/* Admin bubble — extra special */
+.row.in.admin-msg .bubble{
+  background:linear-gradient(135deg,#1a1200,#2a1e00) !important;
+  border:1.5px solid #f5d000 !important;
+  box-shadow:0 0 20px rgba(245,208,0,0.2),0 2px 12px rgba(0,0,0,0.5) !important;
+}
+
+.tail-out{position:absolute;top:0;right:-8px;width:0;height:0;border-left:8px solid var(--out);border-bottom:8px solid transparent;transition:border-color 0.5s}
+.tail-in{position:absolute;top:0;left:-8px;width:0;height:0;border-right:8px solid var(--in);border-bottom:8px solid transparent;transition:border-color 0.5s}
+body.takeover .tail-out{border-left-color:#1e1800}
+body.takeover .tail-in{border-right-color:#1a1500}
+body.takeover .row.in.admin-msg .tail-in{border-right-color:#1a1200}
+
+.btime{font-size:11px;color:var(--muted);float:right;margin-left:8px;margin-top:3px;display:flex;align-items:center;gap:3px}
+.tick{color:var(--tick)}
+
+/* ── Typing ── */
+.typing{background:var(--in);border-radius:8px;border-top-left-radius:2px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.1);display:none;transition:all 0.5s}
+.typing.show{display:block}
+body.takeover .typing{background:#1a1500;border:1px solid #c8a200;box-shadow:0 0 12px rgba(200,162,0,0.2)}
+.dots{display:flex;gap:4px;align-items:center}
+.dots span{width:8px;height:8px;background:#8696a0;border-radius:50%;animation:bounce 1.2s infinite;transition:background 0.5s}
+body.takeover .dots span{background:#c8a200}
 .dots span:nth-child(2){animation-delay:.2s}
 .dots span:nth-child(3){animation-delay:.4s}
 @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
-/* Welcome */
-.welcome { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding:30px 20px; gap:16px; }
-.wicon { width:76px; height:76px; background:linear-gradient(135deg,#00a884,#00d4aa); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:34px; box-shadow:0 8px 24px rgba(0,168,132,0.3); animation:pulse 2s infinite; }
+/* ── Welcome ── */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:30px 20px;gap:16px}
+.wicon{width:76px;height:76px;background:linear-gradient(135deg,#00a884,#00d4aa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 8px 24px rgba(0,168,132,0.3);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 8px 24px rgba(0,168,132,0.3)}50%{box-shadow:0 8px 32px rgba(0,168,132,0.5)}}
-.wtitle { font-size:22px; font-weight:700; color:var(--text); }
-.wsub { font-size:13.5px; color:var(--muted); text-align:center; line-height:20px; }
-.qbtns { display:flex; flex-direction:column; gap:9px; width:100%; margin-top:6px; }
-.qbtn { background:var(--white); border:1.5px solid var(--border); border-radius:12px; padding:13px 16px; font-size:13.5px; font-family:'Noto Sans',sans-serif; color:var(--text); cursor:pointer; text-align:left; display:flex; align-items:center; gap:12px; transition:all 0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
-.qbtn:hover { background:#f0faf8; border-color:var(--green); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,168,132,0.15); }
-.qbtn .bi { font-size:20px; }
-.qbtn .bt { font-weight:600; }
-.qbtn .bs { font-size:12px; color:var(--muted); margin-top:1px; }
+.wtitle{font-size:22px;font-weight:700;color:var(--text)}
+.wsub{font-size:13.5px;color:var(--muted);text-align:center;line-height:20px}
+.qbtns{display:flex;flex-direction:column;gap:9px;width:100%;margin-top:6px}
+.qbtn{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:13.5px;font-family:'Noto Sans',sans-serif;color:var(--text);cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.07)}
+.qbtn:hover{background:#f0faf8;border-color:var(--green);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,168,132,0.15)}
+.qbtn .bi{font-size:20px}
+.qbtn .bt{font-weight:600}
+.qbtn .bs{font-size:12px;color:var(--muted);margin-top:1px}
 
-/* Input */
-.inputbar { background:var(--panel); padding:8px 12px; display:flex; align-items:center; gap:8px; border-top:1px solid var(--border); }
-.inputwrap { flex:1; background:var(--white); border-radius:24px; display:flex; align-items:center; padding:9px 14px; gap:8px; box-shadow:0 1px 2px rgba(0,0,0,0.07); }
-.inputwrap input { flex:1; border:none; outline:none; font-size:15px; font-family:'Noto Sans',sans-serif; color:var(--text); background:transparent; }
-.inputwrap input::placeholder { color:#8696a0; }
-.ibtn { background:none; border:none; cursor:pointer; color:#8696a0; font-size:19px; padding:2px; }
-.sendbtn { width:44px; height:44px; background:var(--green); border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s; flex-shrink:0; box-shadow:0 2px 8px rgba(0,168,132,0.3); }
-.sendbtn:hover { background:var(--green-dark); transform:scale(1.05); }
-.sendbtn svg { width:21px; height:21px; fill:white; }
+/* ── Input ── */
+.inputbar{background:var(--panel);padding:8px 12px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);transition:all 0.8s;position:relative;z-index:2}
+body.takeover .inputbar{background:#000;border-top:1px solid #3a3000}
 
-/* Code pill */
-.cpill { display:inline-block; background:#e8f5e9; border:1.5px solid #a5d6a7; color:#2e7d32; font-weight:700; padding:1px 9px; border-radius:6px; font-size:14px; letter-spacing:1px; }
-.clink { color:#00a884; text-decoration:none; font-weight:500; }
-.clink:hover { text-decoration:underline; }
+.inputwrap{flex:1;background:var(--white);border-radius:24px;display:flex;align-items:center;padding:9px 14px;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,0.07);transition:all 0.8s}
+body.takeover .inputwrap{background:#1a1500;border:1px solid #3a3000;box-shadow:0 0 8px rgba(200,162,0,0.1)}
+
+.inputwrap input{flex:1;border:none;outline:none;font-size:15px;font-family:'Noto Sans',sans-serif;color:var(--text);background:transparent;transition:color 0.5s}
+.inputwrap input::placeholder{color:#8696a0}
+body.takeover .inputwrap input::placeholder{color:#5a4a20}
+
+.ibtn{background:none;border:none;cursor:pointer;color:#8696a0;font-size:19px;padding:2px}
+
+.sendbtn{width:44px;height:44px;background:var(--send-bg);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.5s;flex-shrink:0;box-shadow:0 2px 8px rgba(0,168,132,0.3)}
+.sendbtn:hover{transform:scale(1.05)}
+body.takeover .sendbtn{background:linear-gradient(135deg,#c8a200,#f5d000);box-shadow:0 0 16px rgba(245,208,0,0.5)}
+body.takeover .sendbtn:hover{box-shadow:0 0 24px rgba(245,208,0,0.8)}
+.sendbtn svg{width:21px;height:21px;fill:white}
+body.takeover .sendbtn svg{fill:#000}
+
+/* ── Code pill ── */
+.cpill{display:inline-block;background:var(--pill-bg);border:1.5px solid var(--pill-border);color:var(--pill-text);font-weight:700;padding:1px 9px;border-radius:6px;font-size:14px;letter-spacing:1px;transition:all 0.5s}
+.clink{color:#00a884;text-decoration:none;font-weight:500;transition:color 0.5s}
+body.takeover .clink{color:#f5d000}
+
+/* ── Takeover entry animation ── */
+@keyframes goldFlash{
+  0%{opacity:0}10%{opacity:1;background:rgba(200,162,0,0.15)}100%{opacity:0}
+}
+.gold-flash{position:absolute;inset:0;pointer-events:none;z-index:99;animation:goldFlash 1.5s ease forwards}
+
+/* ── Toast ── */
+.toast{
+  position:absolute;top:70px;left:50%;transform:translateX(-50%);
+  padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;
+  z-index:999;opacity:0;transition:opacity 0.3s;white-space:nowrap;
+  pointer-events:none;
+}
+.toast.normal{background:#1a2632;border:1px solid #00a884;color:#00a884}
+.toast.gold{background:#1a1200;border:1px solid #f5d000;color:#f5d000;font-family:'Cinzel',serif;letter-spacing:1px;box-shadow:0 0 20px rgba(245,208,0,0.3)}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="wrap">
+  <canvas id="particles"></canvas>
 
+  <!-- Header -->
   <div class="header">
-    <div class="avatar">🎟️</div>
+    <div class="avatar" id="avatar">🎟️</div>
     <div>
-      <div class="hname">Coupon Lelo</div>
-      <div class="hstatus">online</div>
+      <div class="hname" id="hname">Coupon Lelo</div>
+      <div class="hstatus" id="hstatus">online</div>
     </div>
     <div class="hicons">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.9 14.3H15l-.3-.3c1-1.1 1.6-2.7 1.6-4.3C16.3 5.8 13.5 3 10 3S3.7 5.8 3.7 9.7s2.8 6.7 6.3 6.7c1.6 0 3-.6 4.1-1.6l.3.3v.8l4.9 4.9 1.5-1.5-4.9-5zm-5.9 0C7.2 14.3 4.7 11.8 4.7 8.7s2.5-5.6 5.3-5.6 5.3 2.5 5.3 5.6-2.4 5.6-5.3 5.6z"/></svg>
@@ -104,38 +223,39 @@ body { font-family:'Noto Sans',sans-serif; background:#111; height:100vh; displa
     </div>
   </div>
 
+  <!-- Takeover Banner -->
+  <div class="takeover-banner" id="takeoverBanner">
+    <span class="banner-dot"></span>PREMIUM SUPPORT — LIVE AGENT CONNECTED<span class="banner-dot" style="margin-left:8px;margin-right:0"></span>
+  </div>
+
+  <!-- Chat -->
   <div class="chat" id="chat">
     <div class="date-div"><span>Today</span></div>
-
     <div class="welcome" id="welcome">
       <div class="wicon">🎟️</div>
       <div class="wtitle">Coupon Lelo! 🔥</div>
       <div class="wsub">PW ke sabse bade discounts yahan milenge!<br/>Neeche se select karo 👇</div>
       <div class="qbtns">
         <button class="qbtn" onclick="quick('Maximum coupon code chahiye! 🔥')">
-          <span class="bi">💥</span>
-          <div><div class="bt">Maximum Discount Code</div><div class="bs">Sabse bada coupon abhi lo</div></div>
+          <span class="bi">💥</span><div><div class="bt">Maximum Discount Code</div><div class="bs">Sabse bada coupon abhi lo</div></div>
         </button>
         <button class="qbtn" onclick="quick('Books aur modules ke liye coupon code batao')">
-          <span class="bi">📚</span>
-          <div><div class="bt">Books / Modules Code</div><div class="bs">PW Store ke liye coupon</div></div>
+          <span class="bi">📚</span><div><div class="bt">Books / Modules Code</div><div class="bs">PW Store ke liye coupon</div></div>
         </button>
         <button class="qbtn" onclick="quick('Vishwas Diwas offer kya hai?')">
-          <span class="bi">🎉</span>
-          <div><div class="bt">Vishwas Diwas Offer</div><div class="bs">Special festival discount</div></div>
+          <span class="bi">🎉</span><div><div class="bt">Vishwas Diwas Offer</div><div class="bs">Special festival discount</div></div>
         </button>
         <button class="qbtn" onclick="quick('Coupon kaise lagaun batch mein?')">
-          <span class="bi">❓</span>
-          <div><div class="bt">Coupon Kaise Lagaun?</div><div class="bs">Step by step guide</div></div>
+          <span class="bi">❓</span><div><div class="bt">Coupon Kaise Lagaun?</div><div class="bs">Step by step guide</div></div>
         </button>
       </div>
     </div>
-
     <div class="row in" id="typingRow" style="display:none">
       <div class="typing show"><div class="dots"><span></span><span></span><span></span></div></div>
     </div>
   </div>
 
+  <!-- Input -->
   <div class="inputbar">
     <div class="inputwrap">
       <button class="ibtn">😊</button>
@@ -146,38 +266,164 @@ body { font-family:'Noto Sans',sans-serif; background:#111; height:100vh; displa
       <svg viewBox="0 0 24 24"><path d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"/></svg>
     </button>
   </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 </div>
 
 <script>
+// Fix mobile keyboard pushing layout
+function fixHeight() {
+  const wrap = document.getElementById('wrap');
+  wrap.style.height = window.innerHeight + 'px';
+}
+fixHeight();
+window.addEventListener('resize', fixHeight);
+
 const CHANNEL_MSG = "Sb Codes yaha se Lelo Maximum Hai 👇👇👇🔥\nhttps://whatsapp.com/channel/0029Vb2MYEqBA1f44sSAdY2G";
 const history = [];
-// Unique session ID per browser tab
 const sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+let adminTakeover = false;
+let nextMsgIsAdmin = false;
+
+// ── Particle system for gold takeover ──
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+let particles = [];
+let animFrame;
+
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+
+function createParticles() {
+  particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 0.5,
+      alpha: Math.random() * 0.5 + 0.1,
+      speed: Math.random() * 0.4 + 0.1,
+      drift: (Math.random() - 0.5) * 0.3,
+    });
+  }
+}
+
+function animParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,162,0,${p.alpha})`;
+    ctx.fill();
+    p.y -= p.speed;
+    p.x += p.drift;
+    if (p.y < -5) { p.y = canvas.height + 5; p.x = Math.random() * canvas.width; }
+  });
+  animFrame = requestAnimationFrame(animParticles);
+}
+
+// ── Activate takeover theme ──
+function activateTakeover() {
+  resizeCanvas();
+  createParticles();
+  animParticles();
+
+  document.body.classList.add("takeover");
+
+  // Flash overlay
+  const flash = document.createElement("div");
+  flash.className = "gold-flash";
+  document.getElementById("wrap").appendChild(flash);
+  setTimeout(() => flash.remove(), 1500);
+
+  // Update header
+  document.getElementById("hname").textContent = "Premium Support";
+  document.getElementById("hstatus").textContent = "⚡ Live Agent Active";
+  document.getElementById("avatar").textContent = "👑";
+  document.getElementById("takeoverBanner").classList.add("show");
+
+  // Inject system message in chat
+  addSystemMsg("👑 Premium Live Support activated. A specialist has joined your session.");
+  showToast("👑 Premium Agent Joined!", "gold");
+  nextMsgIsAdmin = true;
+}
+
+// ── Deactivate takeover theme ──
+function deactivateTakeover() {
+  cancelAnimationFrame(animFrame);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.body.classList.remove("takeover");
+  document.getElementById("hname").textContent = "Coupon Lelo";
+  document.getElementById("hstatus").textContent = "online";
+  document.getElementById("avatar").textContent = "🎟️";
+  document.getElementById("takeoverBanner").classList.remove("show");
+  addSystemMsg("Session returned to assistant.");
+  nextMsgIsAdmin = false;
+}
+
+// ── SSE ──
+const sse = new EventSource(`/sse/student/${sessionId}`);
+sse.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === "takeover") {
+    adminTakeover = data.active;
+    if (data.active) activateTakeover();
+    else deactivateTakeover();
+  }
+  if (data.type === "admin_message") {
+    showTyping(false);
+    addMsg(data.message, "in", true);
+  }
+};
+
+// ── Toast ──
+function showToast(msg, type = "normal") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+// ── System message ──
+function addSystemMsg(text) {
+  hideWelcome();
+  const chat = document.getElementById("chat");
+  const tr = document.getElementById("typingRow");
+  const div = document.createElement("div");
+  div.className = "date-div";
+  div.innerHTML = `<span>${text}</span>`;
+  div.style.animation = "fadeUp 0.4s ease";
+  chat.insertBefore(div, tr);
+  chat.scrollTop = chat.scrollHeight;
+}
 
 function time() {
-  return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  return new Date().toLocaleTimeString("en-US", {hour:"2-digit",minute:"2-digit",hour12:true});
 }
 
 function hideWelcome() {
-  const w = document.getElementById('welcome');
-  if(w) w.style.display = 'none';
+  const w = document.getElementById("welcome");
+  if (w) w.style.display = "none";
 }
 
-function addMsg(text, type) {
+function addMsg(text, type, isAdmin = false) {
   hideWelcome();
-  const chat = document.getElementById('chat');
-  const tr = document.getElementById('typingRow');
-  const row = document.createElement('div');
-  row.className = `row ${type}`;
+  const chat = document.getElementById("chat");
+  const tr = document.getElementById("typingRow");
+  const row = document.createElement("div");
+  row.className = `row ${type}${isAdmin ? " admin-msg" : ""}`;
 
   let fmt = text
-    .replace(/\b(SURSIN0002|RAHRAJ0001|PIYKUM0001|FTT200)\b/g,'<span class="cpill">$1</span>')
-    .replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" class="clink">$1</a>')
-    .replace(/\n/g,'<br/>');
+    .replace(/\b(SURSIN0002|RAHRAJ0001|PIYKUM0001|FTT200)\b/g, '<span class="cpill">$1</span>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" class="clink">$1</a>')
+    .replace(/\n/g, "<br/>");
 
-  const tick = type==='out' ? '<span class="tick">✓✓</span>' : '';
+  const tick = type === "out" ? `<span class="tick">✓✓</span>` : "";
   row.innerHTML = `<div class="bubble">
-    ${type==='out'?'<div class="tail-out"></div>':'<div class="tail-in"></div>'}
+    ${type==="out"?'<div class="tail-out"></div>':'<div class="tail-in"></div>'}
     ${fmt}
     <div class="btime">${time()} ${tick}</div>
   </div>`;
@@ -187,50 +433,52 @@ function addMsg(text, type) {
 }
 
 function showTyping(v) {
-  document.getElementById('typingRow').style.display = v ? 'flex' : 'none';
-  document.getElementById('chat').scrollTop = 99999;
+  document.getElementById("typingRow").style.display = v ? "flex" : "none";
+  document.getElementById("chat").scrollTop = 99999;
 }
 
 async function getReply(msg) {
   history.push({role:"user", content: msg});
   const res = await fetch("/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
     body: JSON.stringify({history, sessionId})
   });
   const data = await res.json();
-  if(data.error) throw new Error(data.error);
+  if (data.error) throw new Error(data.error);
   history.push({role:"assistant", content: data.reply});
-  if(history.length > 20) history.splice(0,2);
+  if (history.length > 20) history.splice(0, 2);
   return data.reply;
 }
 
 async function send() {
-  const inp = document.getElementById('inp');
+  const inp = document.getElementById("inp");
   const text = inp.value.trim();
-  if(!text) return;
-  inp.value = '';
-  addMsg(text, 'out');
+  if (!text) return;
+  inp.value = "";
+  addMsg(text, "out");
   showTyping(true);
   try {
     const reply = await getReply(text);
     showTyping(false);
-    if(reply.includes('[SEND_CHANNEL_LINK]')) {
-      addMsg(reply.replace('[SEND_CHANNEL_LINK]','').trim(), 'in');
-      setTimeout(()=>addMsg(CHANNEL_MSG,'in'), 800);
+    if (reply.includes("[SEND_CHANNEL_LINK]")) {
+      addMsg(reply.replace("[SEND_CHANNEL_LINK]", "").trim(), "in", adminTakeover);
+      setTimeout(() => addMsg(CHANNEL_MSG, "in", adminTakeover), 800);
     } else {
-      addMsg(reply, 'in');
+      addMsg(reply, "in", adminTakeover);
     }
   } catch(e) {
     showTyping(false);
-    addMsg("Thoda busy hu abhi bhai, ek baar phir try karo! 😊", 'in');
+    addMsg("Thoda busy hu abhi bhai, ek baar phir try karo! 😊", "in");
   }
 }
 
 function quick(text) {
-  document.getElementById('inp').value = text;
+  document.getElementById("inp").value = text;
   send();
 }
+
+window.addEventListener("resize", () => { if (adminTakeover) resizeCanvas(); });
 </script>
 </body>
 </html>
